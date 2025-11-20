@@ -26,8 +26,8 @@ function App() {
       {/* 3D Scene Layer - Always rendered to maintain scroll state */}
       {!isMobile && (
         <div className="absolute inset-0 z-0">
-          {/* Camera Z set to 450 to view the centered Mac model (which is ~200 units tall/wide) */}
-          <Canvas camera={{ position: [0, 0, 450], fov: 35, near: 0.1, far: 2000 }}>
+          {/* Camera Z reset for new model */}
+          <Canvas camera={{ position: [0, 0, 8], fov: 35, near: 0.1, far: 100 }}>
             <Experience />
           </Canvas>
         </div>
