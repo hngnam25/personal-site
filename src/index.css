@@ -1,0 +1,68 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: 'Chicago';
+  src: url('https://db.onlinewebfonts.com/t/056353a27c68233bc7a54ec9749b79f0.woff2') format('woff2'); /* Fallback hosted font, ideally local */
+  font-weight: normal;
+  font-style: normal;
+}
+
+html, body, #root {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: #000;
+}
+
+/* Platinum Scrollbar (Mac OS 9 Style) */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 15px;
+  height: 15px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #dddddd; 
+  border-left: 1px solid #888;
+  image-rendering: pixelated;
+  background-image: linear-gradient(45deg, #fff 25%, transparent 25%, transparent 75%, #fff 75%, #fff), 
+                    linear-gradient(45deg, #fff 25%, transparent 25%, transparent 75%, #fff 75%, #fff);
+  background-size: 4px 4px;
+  background-position: 0 0, 2px 2px;
+  opacity: 0.3; /* Texture effect */
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #dddddd;
+  border: 1px solid #555;
+  box-shadow: inset 1px 1px 0 #fff;
+}
+
+.custom-scrollbar::-webkit-scrollbar-button {
+    width: 15px;
+    height: 15px;
+    background-color: #dddddd;
+    border: 1px solid #555;
+    box-shadow: inset 1px 1px 0 #fff;
+}
+
+/* Text Shadow Utility */
+.text-shadow {
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.5);
+}
+
+.text-shadow-sm {
+    text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.2);
+}
+
+/* Stripe Pattern for Window Headers */
+.bg-stripes {
+  background-image: linear-gradient(
+    to bottom,
+    transparent 50%,
+    rgba(0, 0, 0, 0.1) 50%
+  );
+  background-size: 100% 2px;
+}
