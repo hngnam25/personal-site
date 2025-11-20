@@ -15,9 +15,11 @@ interface AppState {
   phase: AppPhase;
   isMobile: boolean;
   hasZoomed: boolean; // Track if we are zoomed in via spacebar
+  hasEntered: boolean; // Track if user has clicked "Enter" from intro
   setPhase: (phase: AppPhase) => void;
   setIsMobile: (isMobile: boolean) => void;
   setHasZoomed: (hasZoomed: boolean) => void;
+  setHasEntered: (hasEntered: boolean) => void;
   
   // Window Management
   windows: WindowState[];
@@ -30,9 +32,11 @@ export const useStore = create<AppState>((set) => ({
   phase: 'analog',
   isMobile: false,
   hasZoomed: false,
+  hasEntered: false,
   setPhase: (phase) => set({ phase }),
   setIsMobile: (isMobile) => set({ isMobile }),
   setHasZoomed: (hasZoomed) => set({ hasZoomed }),
+  setHasEntered: (hasEntered) => set({ hasEntered }),
 
   windows: [
     {

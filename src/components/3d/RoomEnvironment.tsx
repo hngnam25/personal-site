@@ -17,6 +17,10 @@ const CONFIG = {
 // Camera Waypoints (in scene-relative coordinates)
 // The scene is offset by [0, -1.2, -6] so (0,0,0) is the start
 const WAYPOINTS = {
+  intro: {
+    pos: new THREE.Vector3(3, 5, 5), // Way above and slightly back, shifted right to make room for text
+    lookAt: new THREE.Vector3(0, -1.2, -6), // Looking at the center of the room
+  },
   start: {
     pos: new THREE.Vector3(0, 0, 0),
     lookAt: new THREE.Vector3(0, -0.25, -6),
@@ -32,6 +36,7 @@ export function RoomEnvironment(props: any) {
   const setPhase = useStore((state) => state.setPhase);
   const setHasZoomed = useStore((state) => state.setHasZoomed);
   const hasZoomed = useStore((state) => state.hasZoomed);
+  const hasEntered = useStore((state) => state.hasEntered);
   const phase = useStore((state) => state.phase);
 
   const scroll = useScroll();
@@ -41,6 +46,7 @@ export function RoomEnvironment(props: any) {
   const progressRef = useRef(0); // Smoothed zoom progress (0 -> 2)
   const rotationRef = useRef(0); // Smoothed camera rotation
   const scrollProgressRef = useRef(0); // User scroll input (-1 -> 1)
+  const introProgressRef = useRef(0); // Transition from Intro -> Start (0 -> 1)
 
   // --- Resource Loading ---
   const room = useGLTF("/room/scene.gltf");
@@ -93,6 +99,9 @@ export function RoomEnvironment(props: any) {
   // 1. Spacebar: Toggle initial zoom
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Only allow spacebar zoom if we have entered
+      if (!hasEntered) return; 
+
       if (e.code === "Space") {
         setHasZoomed(!hasZoomed);
         if (!hasZoomed) scrollProgressRef.current = 0; // Reset scroll on zoom out
@@ -100,11 +109,11 @@ export function RoomEnvironment(props: any) {
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [hasZoomed, setHasZoomed]);
+  }, [hasZoomed, setHasZoomed, hasEntered]);
 
   // 2. Mouse Wheel: Deep zoom interaction
   useEffect(() => {
-    if (!hasZoomed) return;
+    if (!hasZoomed || !hasEntered) return;
 
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
@@ -118,17 +127,26 @@ export function RoomEnvironment(props: any) {
 
     window.addEventListener("wheel", handleWheel, { passive: false });
     return () => window.removeEventListener("wheel", handleWheel);
-  }, [hasZoomed]);
+  }, [hasZoomed, hasEntered]);
 
   // --- Animation Loop ---
   useFrame((state, delta) => {
     if (!scroll) return;
 
-    // 1. Determine Targets
+    // --- Intro Transition ---
+    // If hasEntered, lerp introProgress to 1. Else stay at 0.
+    const targetIntro = hasEntered ? 1 : 0;
+    introProgressRef.current = THREE.MathUtils.lerp(
+        introProgressRef.current,
+        targetIntro,
+        delta * 2 // Slower transition for intro
+    );
+
+    // 1. Determine Targets for Main Interaction (Start -> Base -> Zoom)
     let targetProgress = 0;
     let targetRotation = 0;
 
-    if (hasZoomed) {
+    if (hasZoomed && hasEntered) {
       // Base zoom (1) + Scroll offset (-1 to 1) = Target range (0 to 2)
       targetProgress = 1 + scrollProgressRef.current;
 
@@ -163,13 +181,13 @@ export function RoomEnvironment(props: any) {
     const stage2Progress = Math.max(0, currentProgress - 1);
 
     // Base Interpolation (Stage 1)
-    const currentPos = new THREE.Vector3().lerpVectors(
+    let currentPos = new THREE.Vector3().lerpVectors(
       WAYPOINTS.start.pos,
       WAYPOINTS.base.pos,
       stage1Progress
     );
 
-    const currentLookAt = new THREE.Vector3().lerpVectors(
+    let currentLookAt = new THREE.Vector3().lerpVectors(
       WAYPOINTS.start.lookAt,
       WAYPOINTS.base.lookAt,
       stage1Progress
@@ -206,7 +224,25 @@ export function RoomEnvironment(props: any) {
       state.camera.position.copy(currentPos);
     }
 
-    state.camera.lookAt(currentLookAt);
+    // --- Apply Intro Interpolation ---
+    // We interpolate between the calculated "Interactive State" (Start/Base/Zoom) and the "Intro State"
+    // If introProgress is 0 (Start of intro), we are at WAYPOINTS.intro
+    // If introProgress is 1 (Entered), we are at calculated state.
+    
+    if (introProgressRef.current < 0.999) {
+         const introPos = WAYPOINTS.intro.pos;
+         const introLookAt = WAYPOINTS.intro.lookAt;
+         
+         state.camera.position.lerpVectors(introPos, state.camera.position, introProgressRef.current);
+         // For LookAt, we need to interpolate the target point, then look at it.
+         // We can't just lerp the lookAt call, we have to lerp the vector we are looking at.
+         // currentLookAt holds the target for the interactive state.
+         
+         const finalLookAt = new THREE.Vector3().lerpVectors(introLookAt, currentLookAt, introProgressRef.current);
+         state.camera.lookAt(finalLookAt);
+    } else {
+         state.camera.lookAt(currentLookAt);
+    }
 
     // 5. Handle Phase Switching (Analog <-> Digital)
     if (hasZoomed) {
@@ -250,4 +286,3 @@ export function RoomEnvironment(props: any) {
 // Preload assets
 useGLTF.preload("/room/scene.gltf");
 useGLTF.preload("/computer_desk/scene.glb");
-

@@ -5,7 +5,7 @@ import { Overlay } from './components/Overlay';
 import { useStore } from './store';
 
 function App() {
-  const { phase, isMobile, setIsMobile, setPhase } = useStore();
+  const { phase, isMobile, setIsMobile, setPhase, hasEntered, setHasEntered } = useStore();
 
   useEffect(() => {
     const checkMobile = () => {
@@ -36,10 +36,44 @@ function App() {
       {/* OS Interface Layer - Visible in digital phase or mobile */}
       <Overlay />
       
+      {/* Welcome Screen */}
+      {!isMobile && !hasEntered && (
+        <div className="absolute inset-0 z-20 pointer-events-none">
+          {/* Left Corner Text */}
+          <div className="absolute top-10 left-10 max-w-md text-white/80 font-['DearPix'] text-lg leading-relaxed pointer-events-auto">
+            <h2 className="text-2xl mb-4">nhà [ɲaː˨˩]:</h2>
+            <ol className="list-decimal pl-5 space-y-4">
+              
+                A physical place or spiritual state where one lives or returns to; a dwelling that provides safety, shelter, and familiarity.
+              
+
+            </ol>
+          </div>
+
+          {/* Right Corner Welcome */}
+          <div className="absolute bottom-0 right-0 p-20 pb-20 flex flex-col items-end gap-8 pointer-events-auto">
+             <h1 className="text-6xl font-bold text-white text-right drop-shadow-lg leading-tight font-['Ransom']">
+               Welcome to <br/>
+               <span className="text-[#FFD700]">Nam Nguyen's</span> Space
+             </h1>
+             <button 
+               onClick={() => setHasEntered(true)}
+               className="relative w-32 h-16 bg-[#e5e5e5] rounded-md shadow-[0_4px_0_#a3a3a3] active:shadow-none active:translate-y-1 transition-all group"
+               aria-label="Enter"
+             >
+                {/* Key Cap */}
+                <div className="absolute inset-1 bg-[#f0f0f0] rounded flex items-center justify-center border-b-4 border-[#d4d4d4]">
+                  <span className="text-gray-600 text-xl font-['DearPix'] group-hover:text-black transition-colors">enter ↵</span>
+                </div>
+             </button>
+          </div>
+        </div>
+      )}
+
       {/* Initial Loading / Scroll Prompt (Optional) */}
-      {!isMobile && phase === 'analog' && (
+      {!isMobile && hasEntered && phase === 'analog' && (
         <div className="absolute bottom-10 left-1/2 -translate-x-1/2 text-white opacity-50 animate-bounce pointer-events-none z-10">
-          Scroll to enter
+          Scroll to explore
         </div>
       )}
     </div>

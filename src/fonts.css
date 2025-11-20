@@ -1,0 +1,13 @@
+@font-face {
+  font-family: 'Ransom';
+  src: url('./ransom_pixel-webfont.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'DearPix';
+  src: url('./dearpix-1-0.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+}
