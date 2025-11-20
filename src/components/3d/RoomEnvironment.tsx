@@ -8,7 +8,7 @@ import { useStore } from "../../store";
 const CONFIG = {
   scrollSpeed: 0.003,
   animationSpeed: 5,
-  zoomDepth: 5,
+  zoomDepth: 3 ,
   // Camera moves in Negative X direction during deep zoom (Forward into screen)
   zoomDirection: new THREE.Vector3(-1, 0, 0),
   phaseThreshold: 1.7,
