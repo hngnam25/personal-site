@@ -52,8 +52,8 @@ export function MacModel(props: any) {
 
     // Camera Animation Logic
     // Adjusted for likely scale of new model, assuming it's roughly unit scale or similar
-    const startZ = 5; // Reduced from 450 as we probably don't need to be that far if we Scale correctly
-    const endZ = 2; 
+    const startZ = 4; // Reduced from 450 as we probably don't need to be that far if we Scale correctly
+    const endZ = 1; 
     // If we keep the large numbers, we might need to scale the model up significantly.
     // Let's try to keep the original logic for now but maybe check scale.
     // The previous model had scale={100}.
@@ -68,10 +68,10 @@ export function MacModel(props: any) {
     const targetZ = startZ - (offset * (startZ - endZ)); 
     
     // Z-axis movement (Zoom)
-    state.camera.position.z = THREE.MathUtils.lerp(state.camera.position.z, targetZ, 0.1);
+    state.camera.position.z = THREE.MathUtils.lerp(state.camera.position.z, targetZ, 1);
 
     // Y-axis movement
-    const targetY = THREE.MathUtils.lerp(0, 1, offset); 
+    const targetY = THREE.MathUtils.lerp(0, 0.1, offset); 
     state.camera.position.y = THREE.MathUtils.lerp(state.camera.position.y, targetY, 0.1);
     
     // Rotation

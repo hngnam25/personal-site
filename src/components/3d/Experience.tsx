@@ -1,6 +1,6 @@
 import React from 'react';
-import { ScrollControls } from '@react-three/drei';
-import { MacModel } from './MacModel';
+import { ScrollControls, OrbitControls } from '@react-three/drei';
+import { RoomEnvironment } from './RoomEnvironment';
 import { useStore } from '../../store';
 
 export const Experience: React.FC = () => {
@@ -13,8 +13,11 @@ export const Experience: React.FC = () => {
       <directionalLight position={[10, 10, 5]} intensity={2} />
       <pointLight position={[-10, -10, -10]} intensity={1} color="blue" />
       
+      {/* OrbitControls allows manual navigation to find the scene */}
+      <OrbitControls enableZoom={true} enableRotate={true} enablePan={true} />
+
       <ScrollControls pages={2} damping={0.3}>
-        <MacModel />
+        <RoomEnvironment />
       </ScrollControls>
     </>
   );
