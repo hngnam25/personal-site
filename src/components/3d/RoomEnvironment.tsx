@@ -1,29 +1,61 @@
-import { useLayoutEffect, useRef } from "react";
+import { useLayoutEffect, useRef, useEffect, useMemo } from "react";
 import { useGLTF, useTexture, useScroll } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { useStore } from "../../store";
 
+// --- Constants & Configuration ---
+const SCROLL_SPEED = 0.003;
+const ANIMATION_SPEED = 5;
+const ZOOM_DEPTH = 5;
+
+// Camera Waypoints (in scene-relative coordinates)
+// The scene is offset by [0, -1.2, -6] so (0,0,0) is the start
+const CAMERA_START_POS = new THREE.Vector3(0, 0, 0);
+const CAMERA_START_LOOK_AT = new THREE.Vector3(0, -0.25, -6);
+const CAMERA_BASE_END_POS = new THREE.Vector3(1.17, -0.35, -5.8);
+const CAMERA_END_LOOK_AT = new THREE.Vector3(1.17, -0.35, -6);
+const CAMERA_DEEP_LOOK_AT = new THREE.Vector3(1.17 - ZOOM_DEPTH, -0.35, -6); // Move LookAt straight ahead (X-) to match camera move
+
+// Phase Transition Thresholds
+const PHASE_DIGITAL_THRESHOLD = 1.7;
+const PHASE_ANALOG_THRESHOLD = 1.7; 
+
 export function RoomEnvironment(props: any) {
-  // 1. Load the Room
-  const room = useGLTF("/room/scene.gltf");
+  // --- State & Store ---
+  const setPhase = useStore((state) => state.setPhase);
+  const setHasZoomed = useStore((state) => state.setHasZoomed);
+  const hasZoomed = useStore((state) => state.hasZoomed);
+  const phase = useStore((state) => state.phase);
   
-  // 2. Load the Computer Desk
+  const scroll = useScroll();
+  const groupRef = useRef<THREE.Group>(null);
+
+  // Animation State Refs
+  const progressRef = useRef(0);       // Smoothed zoom progress (0 -> 2)
+  const rotationRef = useRef(0);       // Smoothed camera rotation
+  const scrollProgressRef = useRef(0); // User scroll input (-1 -> 1)
+
+  // --- Resource Loading ---
+  const room = useGLTF("/room/scene.gltf");
   const { scene: computerScene } = useGLTF("/computer_desk/scene.glb");
   
-  // Load textures for Computer
   const computerTextures = useTexture({
     map: "/computer_desk/textures/texture_pbr_v128_1.png",
     roughnessMap: "/computer_desk/textures/texture_pbr_v128_metallic-texture_pbr_v128_roughness_2@chann.png",
     metallicMap: "/computer_desk/textures/texture_pbr_v128_metallic-texture_pbr_v128_roughness_2@chann.png",
   });
 
+  // Memoize deep zoom position to avoid recalculation
+  const deepZoomPos = useMemo(() => 
+    CAMERA_BASE_END_POS.clone().add(new THREE.Vector3(-ZOOM_DEPTH, 0, 0)), // Move straight ahead (-X)
+  []);
+
+  // --- Scene Setup (Materials & Shadows) ---
   useLayoutEffect(() => {
-    // Configure Computer Textures
     computerTextures.map.colorSpace = THREE.SRGBColorSpace;
-    // Reverting to default flipY=true to match MacModel.tsx behavior (which works)
-    // Note: Manual overrides are removed to use default behavior
-    
+
+    // Configure Computer Desk Materials
     computerScene.traverse((child) => {
       if ((child as THREE.Mesh).isMesh) {
         const mesh = child as THREE.Mesh;
@@ -34,24 +66,17 @@ export function RoomEnvironment(props: any) {
           mesh.material.map = computerTextures.map;
           mesh.material.roughnessMap = computerTextures.roughnessMap;
           mesh.material.metalnessMap = computerTextures.metallicMap;
-
-          // Adjust material properties to match the aged beige plastic look
-          // Reduce the influence of the metallic map if it's making it too shiny/grainy
-          // Plastic is generally non-metallic
-          mesh.material.metalness = 0.1; 
-          mesh.material.roughness = 0.6; // Slightly rough plastic
           
-          // Tint the color to match beige plastic if the texture is too white
-          // The texture itself seems to have the color, but let's ensure we aren't washing it out
-          // mesh.material.color = new THREE.Color('#e8e4d0'); // Uncomment if texture is grey/white
-
-          mesh.material.envMapIntensity = 0.5; // Reduce environmental reflections
+          // Aesthetic adjustments for "aged beige plastic" look
+          mesh.material.metalness = 0.1; 
+          mesh.material.roughness = 0.6;
+          mesh.material.envMapIntensity = 0.5;
           mesh.material.needsUpdate = true;
         }
       }
     });
     
-    // Room Scaling/Shadows
+    // Configure Room Shadows
     room.scene.traverse((child) => {
        if ((child as THREE.Mesh).isMesh) {
          child.castShadow = true;
@@ -61,80 +86,138 @@ export function RoomEnvironment(props: any) {
 
   }, [computerScene, computerTextures, room.scene]);
 
-  const groupRef = useRef<THREE.Group>(null);
-  const scroll = useScroll();
-  const setPhase = useStore((state) => state.setPhase);
-  const phase = useStore((state) => state.phase);
-  
-  useFrame((state) => {
+  // --- Input Handling ---
+
+  // 1. Spacebar: Toggle initial zoom
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.code === 'Space') {
+        setHasZoomed(!hasZoomed);
+        if (!hasZoomed) scrollProgressRef.current = 0; // Reset scroll on zoom out
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [hasZoomed, setHasZoomed]);
+
+  // 2. Mouse Wheel: Deep zoom interaction
+  useEffect(() => {
+    if (!hasZoomed) return;
+
+    const handleWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      // Accumulate scroll delta, clamped between -1 (zoom out past base) and 1 (max deep zoom)
+      scrollProgressRef.current += e.deltaY * SCROLL_SPEED;
+      scrollProgressRef.current = Math.max(-1, Math.min(1, scrollProgressRef.current));
+    };
+
+    window.addEventListener('wheel', handleWheel, { passive: false });
+    return () => window.removeEventListener('wheel', handleWheel);
+  }, [hasZoomed]);
+
+  // --- Animation Loop ---
+  useFrame((state, delta) => {
      if (!scroll) return;
-     const offset = scroll.offset;
+     
+     // 1. Determine Targets
+     let targetProgress = 0;
+     let targetRotation = 0;
+     
+     if (hasZoomed) {
+       // Base zoom (1) + Scroll offset (-1 to 1) = Target range (0 to 2)
+       targetProgress = 1 + scrollProgressRef.current;
+       
+       // Rotate camera 90deg when fully zoomed in (target=1), 0deg when zoomed out (target=0)
+       const rotationFactor = Math.max(0, Math.min(1, targetProgress)); 
+       targetRotation = (Math.PI / 2) * rotationFactor;
+       
+       // Auto-exit if scrolled out too far
+       if (targetProgress < 0.5) {
+         setHasZoomed(false);
+         scrollProgressRef.current = 0;
+       }
+     }
 
-     // Adjust camera logic for rotated room
-     // When room rotates -90 deg (Y), the 'computer' which was at X: -1.16, Z: 0.05 
-     // is now roughly at Z: -1.16, X: -0.05 (following standard rotation rules).
-     // Let's re-calculate or simply adjust the camera to look at the "new" location.
+     // 2. Smooth State Transitions
+     progressRef.current = THREE.MathUtils.lerp(progressRef.current, targetProgress, delta * ANIMATION_SPEED);
+     rotationRef.current = THREE.MathUtils.lerp(rotationRef.current, targetRotation, delta * ANIMATION_SPEED);
      
-     // New Computer World Position (Approximate after parent rotation)
-     // Original: [-1.16, 0.85, 0.05]
-     // Rotated -90 Y: [0.05, 0.85, 1.16] (Signs depend on rotation direction, let's verify visually)
-     // Math: x' = x cos(-90) - z sin(-90) = 0 - 0.05(-1) = 0.05
-     //       z' = x sin(-90) + z cos(-90) = -1.16(-1) + 0 = 1.16
-     
-     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-     const endPos = new THREE.Vector3(0.05, 0.85, 2.5); // Zoomed out slightly in front of new Z
-     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-     const endLookAt = new THREE.Vector3(0.05, 0.85, 1.16); // The computer position
-     
-     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-     const startPos = new THREE.Vector3(0, 2, 6);
-     const startLookAt = new THREE.Vector3(0, 0, 0);
-     
-     const currentLookAtX = THREE.MathUtils.lerp(startLookAt.x, endLookAt.x, offset);
-     const currentLookAtY = THREE.MathUtils.lerp(startLookAt.y, endLookAt.y, offset);
-     const currentLookAtZ = THREE.MathUtils.lerp(startLookAt.z, endLookAt.z, offset);
-     
-     state.camera.lookAt(currentLookAtX, currentLookAtY, currentLookAtZ);
+     const currentProgress = progressRef.current;
 
-     // Threshold check for phase change
-     if (offset > 0.95 && phase === 'analog') {
-        setPhase('digital');
-      }
-  
-      if (offset < 0.95 && phase === 'digital') {
-        setPhase('analog');
-      }
+     // 3. Calculate Camera Position
+     let currentPos = new THREE.Vector3();
+     
+     if (currentProgress <= 1) {
+       // Stage 1: Start -> Base Zoom Position
+       currentPos.lerpVectors(CAMERA_START_POS, CAMERA_BASE_END_POS, currentProgress);
+     } else {
+       // Stage 2: Base Zoom -> Deep Zoom (Inside Screen)
+       // Remap progress (1->2) to (0->1)
+       const deepZoomFactor = Math.min(1, currentProgress - 1);
+       currentPos.lerpVectors(CAMERA_BASE_END_POS, deepZoomPos, deepZoomFactor);
+     }
+     
+     state.camera.position.copy(currentPos);
+
+     // 4. Calculate LookAt & Rotation
+     const clampedProgress = Math.min(1, currentProgress);
+     const currentLookAt = new THREE.Vector3().lerpVectors(
+       CAMERA_START_LOOK_AT, 
+       CAMERA_END_LOOK_AT, 
+       clampedProgress
+     );
+
+     // Move LookAt point deep into the screen during deep zoom to prevent camera flip
+     if (currentProgress > 1) {
+        currentLookAt.lerp(CAMERA_DEEP_LOOK_AT, Math.min(1, currentProgress - 1));
+     }
+
+     // Apply orbital rotation around the LookAt point
+     if (rotationRef.current !== 0) {
+        const rotationMatrix = new THREE.Matrix4().makeRotationY(rotationRef.current);
+        const cameraOffset = new THREE.Vector3().subVectors(state.camera.position, currentLookAt);
+        
+        cameraOffset.applyMatrix4(rotationMatrix);
+        state.camera.position.addVectors(currentLookAt, cameraOffset);
+     }
+
+     state.camera.lookAt(currentLookAt);
+
+     // 5. Handle Phase Switching (Analog <-> Digital)
+     if (hasZoomed) {
+        if (currentProgress > PHASE_DIGITAL_THRESHOLD && phase === 'analog') {
+          setPhase('digital');
+        } else if (currentProgress < PHASE_ANALOG_THRESHOLD && phase === 'digital') {
+          setPhase('analog');
+        }
+     }
   });
 
   return (
     <group ref={groupRef} {...props} dispose={null}>
-      {/* 
-         Room Scene 
-         Scaling by 0.01 because the GLTF nodes have scale 100, 
-         and we want to normalize the scene to meters roughly.
-      */}
-      <primitive 
-        object={room.scene} 
-        scale={0.01} 
-        rotation={[0, -Math.PI / 2, 0]} 
-      />
+      {/* Scene Offset: Moves world origin to camera start position */}
+      <group position={[0, -1.2, -6]}>
+        
+        {/* Room Model */}
+        <primitive 
+          object={room.scene} 
+          scale={0.01} 
+          rotation={[0, -Math.PI / 2, 0]} 
+        />
 
-      {/* 
-         Computer Desk Positioned on Table (Left)
-         Position Y increased to 0.9 (20% higher).
-         Rotation adjusted: User asked to turn 90 deg "right on x axis". 
-         Assuming they meant turning it to face the correct direction (Y-axis rotation).
-         Changed rotation from [0, Math.PI/2, 0] to [0, 0, 0] (90 deg turn).
-         If this is incorrect (e.g. they wanted it tilted), we can adjust.
-      */}
-      <group position={[0, 0, 0]} rotation={[0, -Math.PI / 2, 0]}>
-          <group position={[0, 0.85, 1.17]} rotation={[0, 3, 0]}>
-             <primitive object={computerScene} scale={0.5} />
-          </group>
+        {/* Computer Desk Model */}
+        {/* Positioned on the left table, rotated 90deg to face room center */}
+        <group position={[0, 0, 0]} rotation={[0, -Math.PI / 2, 0]}>
+            <group position={[0, 0.85, 1.17]} rotation={[0, 3, 0]}>
+               <primitive object={computerScene} scale={0.5} />
+            </group>
+        </group>
+
       </group>
     </group>
   );
 }
 
+// Preload assets
 useGLTF.preload("/room/scene.gltf");
 useGLTF.preload("/computer_desk/scene.glb");

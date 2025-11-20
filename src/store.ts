@@ -14,8 +14,10 @@ export interface WindowState {
 interface AppState {
   phase: AppPhase;
   isMobile: boolean;
+  hasZoomed: boolean; // Track if we are zoomed in via spacebar
   setPhase: (phase: AppPhase) => void;
   setIsMobile: (isMobile: boolean) => void;
+  setHasZoomed: (hasZoomed: boolean) => void;
   
   // Window Management
   windows: WindowState[];
@@ -27,8 +29,10 @@ interface AppState {
 export const useStore = create<AppState>((set) => ({
   phase: 'analog',
   isMobile: false,
+  hasZoomed: false,
   setPhase: (phase) => set({ phase }),
   setIsMobile: (isMobile) => set({ isMobile }),
+  setHasZoomed: (hasZoomed) => set({ hasZoomed }),
 
   windows: [
     {
