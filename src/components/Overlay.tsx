@@ -3,10 +3,11 @@ import { useStore } from '../store';
 import { Taskbar } from './os/Taskbar';
 import { DesktopIcon } from './os/DesktopIcon';
 import { Window } from './os/Window';
+import { SpotifyPlayer } from './os/SpotifyPlayer';
 import { AnimatePresence } from 'framer-motion';
 
 export const Overlay: React.FC = () => {
-  const { phase, isMobile, windows } = useStore();
+  const { phase, isMobile, windows, isScreenFocused } = useStore();
   const showOS = phase === 'digital' || isMobile;
 
   if (!showOS) return null;
@@ -88,6 +89,15 @@ export const Overlay: React.FC = () => {
       <div className="pointer-events-auto fixed top-0 w-full z-50">
          <Taskbar />
       </div>
+
+      {/* Spotify Player Overlay - Only visible when screen is focused */}
+      {isScreenFocused && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 pointer-events-none">
+            <div className="pointer-events-auto">
+                <SpotifyPlayer />
+            </div>
+        </div>
+      )}
     </div>
   );
 };

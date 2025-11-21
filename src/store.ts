@@ -11,15 +11,30 @@ export interface WindowState {
   position: { x: number; y: number };
 }
 
+export interface SpotifyState {
+  currentTrack: {
+    title: string;
+    artist: string;
+    albumArt: string;
+  } | null;
+  isPlaying: boolean;
+  selectedPlaylist: string | null;
+}
+
 interface AppState {
   phase: AppPhase;
   isMobile: boolean;
   hasZoomed: boolean; // Track if we are zoomed in via spacebar
   hasEntered: boolean; // Track if user has clicked "Enter" from intro
+  isScreenFocused: boolean; // Track if user has pressed "Tab" for screen focus
+  spotifyState: SpotifyState;
+
   setPhase: (phase: AppPhase) => void;
   setIsMobile: (isMobile: boolean) => void;
   setHasZoomed: (hasZoomed: boolean) => void;
   setHasEntered: (hasEntered: boolean) => void;
+  setIsScreenFocused: (isScreenFocused: boolean) => void;
+  setSpotifyState: (state: Partial<SpotifyState>) => void;
   
   // Window Management
   windows: WindowState[];
@@ -33,10 +48,20 @@ export const useStore = create<AppState>((set) => ({
   isMobile: false,
   hasZoomed: false,
   hasEntered: false,
+  isScreenFocused: false,
+  spotifyState: {
+    currentTrack: null,
+    isPlaying: false,
+    selectedPlaylist: null
+  },
   setPhase: (phase) => set({ phase }),
   setIsMobile: (isMobile) => set({ isMobile }),
   setHasZoomed: (hasZoomed) => set({ hasZoomed }),
   setHasEntered: (hasEntered) => set({ hasEntered }),
+  setIsScreenFocused: (isScreenFocused) => set({ isScreenFocused }),
+  setSpotifyState: (newState) => set((state) => ({
+    spotifyState: { ...state.spotifyState, ...newState }
+  })),
 
   windows: [
     {

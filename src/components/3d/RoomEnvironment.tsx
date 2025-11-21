@@ -29,6 +29,13 @@ const WAYPOINTS = {
     pos: new THREE.Vector3(1.17, -0.35, -5.8),
     lookAt: new THREE.Vector3(1.17, -0.35, -6),
   },
+  screen: {
+    // Move straight to the back of the room
+    pos: new THREE.Vector3(0, -0.25, -6), 
+    
+    // Keep looking forward/slightly down or straight at the wall
+    lookAt: new THREE.Vector3(0, -0.25  , -6), // Exact match to start.lookAt
+  },
 };
 
 export function RoomEnvironment(props: any) {
@@ -38,6 +45,8 @@ export function RoomEnvironment(props: any) {
   const hasZoomed = useStore((state) => state.hasZoomed);
   const hasEntered = useStore((state) => state.hasEntered);
   const phase = useStore((state) => state.phase);
+  const isScreenFocused = useStore((state) => state.isScreenFocused);
+  const setIsScreenFocused = useStore((state) => state.setIsScreenFocused);
 
   const scroll = useScroll();
   const groupRef = useRef<THREE.Group>(null);
@@ -111,9 +120,24 @@ export function RoomEnvironment(props: any) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [hasZoomed, setHasZoomed, hasEntered]);
 
-  // 2. Mouse Wheel: Deep zoom interaction
+  // 2. Tab: Toggle Cupboard Focus
   useEffect(() => {
-    if (!hasZoomed || !hasEntered) return;
+    const handleTab = (e: KeyboardEvent) => {
+      // Only allow Tab zoom if we have entered and NOT zoomed into desk
+      if (!hasEntered || hasZoomed) return;
+
+      if (e.code === 'Tab') {
+        e.preventDefault();
+        setIsScreenFocused(!isScreenFocused);
+      }
+    };
+    window.addEventListener('keydown', handleTab);
+    return () => window.removeEventListener('keydown', handleTab);
+  }, [hasEntered, hasZoomed, isScreenFocused, setIsScreenFocused]);
+
+  // 3. Mouse Wheel: Deep zoom interaction
+  useEffect(() => {
+    if (!hasZoomed || !hasEntered || isScreenFocused) return; // Disable scroll zoom if focused
 
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
@@ -146,7 +170,7 @@ export function RoomEnvironment(props: any) {
     let targetProgress = 0;
     let targetRotation = 0;
 
-    if (hasZoomed && hasEntered) {
+    if (hasZoomed && hasEntered && !isScreenFocused) {
       // Base zoom (1) + Scroll offset (-1 to 1) = Target range (0 to 2)
       targetProgress = 1 + scrollProgressRef.current;
 
@@ -174,6 +198,18 @@ export function RoomEnvironment(props: any) {
     );
 
     const currentProgress = progressRef.current;
+
+    // --- Screen Focus Override ---
+    if (isScreenFocused) {
+      // Smoothly move towards Screen Waypoint
+      state.camera.position.lerp(WAYPOINTS.screen.pos, delta * 4);
+      
+      // HARD SET: Use the start lookAt directly. No lerping, no calculation.
+      // This guarantees the camera angle remains exactly constant.
+      state.camera.lookAt(WAYPOINTS.start.lookAt);
+      
+      return; // Skip standard logic
+    }
 
     // 3. Interpolate Base Position & LookAt
     // Split progress into Stage 1 (0->1) and Stage 2 (1->2)
