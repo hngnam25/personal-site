@@ -202,7 +202,12 @@ export function RoomEnvironment(props: any) {
     // --- Screen Focus Override ---
     if (isScreenFocused) {
       // Smoothly move towards Screen Waypoint
-      state.camera.position.lerp(WAYPOINTS.screen.pos, delta * 4);
+      // Only lerp if distance is significant to avoid jitter at the end
+      if (state.camera.position.distanceTo(WAYPOINTS.screen.pos) > 0.001) {
+         state.camera.position.lerp(WAYPOINTS.screen.pos, delta * 4);
+      } else {
+         state.camera.position.copy(WAYPOINTS.screen.pos);
+      }
       
       // HARD SET: Use the start lookAt directly. No lerping, no calculation.
       // This guarantees the camera angle remains exactly constant.
@@ -276,7 +281,8 @@ export function RoomEnvironment(props: any) {
          
          const finalLookAt = new THREE.Vector3().lerpVectors(introLookAt, currentLookAt, introProgressRef.current);
          state.camera.lookAt(finalLookAt);
-    } else {
+    } else if (!isScreenFocused) {
+        // Only update lookAt here if NOT screen focused (screen focus handles its own lookAt)
          state.camera.lookAt(currentLookAt);
     }
 
