@@ -7,7 +7,7 @@ import { LoginScreen } from './os/LoginScreen';
 import { AnimatePresence } from 'framer-motion';
 
 export const Overlay: React.FC = () => {
-  const { phase, isMobile, windows, isScreenFocused, isUnlocked } = useStore();
+  const { phase, isMobile, windows, isUnlocked } = useStore();
   const showOS = phase === 'digital' || isMobile;
 
   if (!showOS) return null;

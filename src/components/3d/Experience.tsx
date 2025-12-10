@@ -1,7 +1,6 @@
 import React from 'react';
 import { ScrollControls, OrbitControls } from '@react-three/drei';
 import { RoomEnvironment } from './RoomEnvironment';
-import { useStore } from '../../store';
 
 export const Experience: React.FC = () => {
   // We keep the Experience mounted to maintain ScrollControls state

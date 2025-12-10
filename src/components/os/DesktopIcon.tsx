@@ -7,7 +7,7 @@ interface DesktopIconProps {
   icon?: React.ReactNode; // Placeholder for an icon component or image
 }
 
-export const DesktopIcon: React.FC<DesktopIconProps> = ({ id, label, icon }) => {
+export const DesktopIcon: React.FC<DesktopIconProps> = ({ id, label }) => {
   const openWindow = useStore((state) => state.openWindow);
 
   return (

@@ -1,11 +1,11 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { Experience } from './components/3d/Experience';
 import { Overlay } from './components/Overlay';
 import { useStore } from './store';
 
 function App() {
-  const { phase, isMobile, setIsMobile, setPhase, hasEntered, setHasEntered, hasZoomed, isScreenFocused } = useStore();
+  const { isMobile, setIsMobile, setPhase, hasEntered, setHasEntered, hasZoomed, isScreenFocused } = useStore();
 
   useEffect(() => {
     const checkMobile = () => {

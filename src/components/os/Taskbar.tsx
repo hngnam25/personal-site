@@ -1,11 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useStore } from '../../store';
 import { Apple } from 'lucide-react'; // Using Apple icon as a proxy for the Apple Logo
 
 export const Taskbar: React.FC = () => {
   const [time, setTime] = useState(new Date());
-  const windows = useStore((state) => state.windows);
-  const openWindow = useStore((state) => state.openWindow);
 
   useEffect(() => {
     const timer = setInterval(() => setTime(new Date()), 1000);
