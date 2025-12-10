@@ -39,7 +39,7 @@ export const Taskbar: React.FC = () => {
          <div className="flex items-center gap-1 px-2 border-l border-[#999] h-full cursor-pointer hover:bg-[#ccc]">
             {/* Placeholder Application Icon */}
             <div className="w-4 h-4 bg-blue-500 rounded-sm"></div>
-            <span className="font-bold hidden md:block">ScrollyPortfolio</span>
+            <span className="font-bold hidden md:block">Khánh Xinh Gái</span>
          </div>
          
          <div className="px-2 border-l border-[#999] h-full flex items-center font-mono text-xs">

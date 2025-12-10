@@ -18,7 +18,7 @@ export const FloatingSpotifyPlayer: React.FC = () => {
       <div className="pointer-events-auto rounded-xl overflow-hidden shadow-2xl">
         <iframe 
           style={{ borderRadius: '12px' }} 
-          src="https://open.spotify.com/embed/playlist/37i9dQZF1DWWQRwui0ExPn?utm_source=generator&theme=0" 
+          src="https://open.spotify.com/embed/playlist/5PxbjJo9v2uF8jeXb0rD2t?utm_source=generator" 
           width="100%" 
           height="160 " 
           frameBorder="0" 
