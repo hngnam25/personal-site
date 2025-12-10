@@ -70,12 +70,24 @@ function App() {
         </div>
       )}
 
+      {/* Manual / Instructions */}
+      {!isMobile && hasEntered && (
+        <div className="absolute bottom-10 right-10 text-white/70 text-sm font-['DearPix'] pointer-events-none z-10">
+          <div className="space-y-1">
+            <div>+ Press Space to check out the workspace</div>
+            <div>+ Press Tab to listen to some music</div>
+          </div>
+        </div>
+      )}
+
       {/* Initial Loading / Scroll Prompt (Optional) */}
+      {/* Temporarily disabled
       {!isMobile && hasEntered && phase === 'analog' && (
         <div className="absolute bottom-10 left-1/2 -translate-x-1/2 text-white opacity-50 animate-bounce pointer-events-none z-10">
           Scroll to explore
         </div>
       )}
+      */}
     </div>
   );
 }
