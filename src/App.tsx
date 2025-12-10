@@ -21,6 +21,17 @@ function App() {
     return () => window.removeEventListener('resize', checkMobile);
   }, [setIsMobile, setPhase]);
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!hasEntered && e.key === 'Enter') {
+        setHasEntered(true);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [hasEntered, setHasEntered]);
+
   return (
     <div className="w-full h-screen bg-black overflow-hidden relative">
       {/* 3D Scene Layer - Always rendered to maintain scroll state */}
@@ -77,7 +88,7 @@ function App() {
             {isScreenFocused ? (
               <div>Enjoy the Music or Press Tab to Go Back</div>
             ) : hasZoomed ? (
-              <div>Scroll Down to Check Out the Computer</div>
+              <div>Scroll Up to Check Out the Computer</div>
             ) : (
               <>
                 <div>+ Press Space to check out the workspace</div>
