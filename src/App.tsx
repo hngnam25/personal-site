@@ -5,7 +5,7 @@ import { Overlay } from './components/Overlay';
 import { useStore } from './store';
 
 function App() {
-  const { phase, isMobile, setIsMobile, setPhase, hasEntered, setHasEntered } = useStore();
+  const { phase, isMobile, setIsMobile, setPhase, hasEntered, setHasEntered, hasZoomed, isScreenFocused } = useStore();
 
   useEffect(() => {
     const checkMobile = () => {
@@ -53,8 +53,8 @@ function App() {
           {/* Right Corner Welcome */}
           <div className="absolute bottom-0 right-0 p-20 pb-20 flex flex-col items-end gap-8 pointer-events-auto">
              <h1 className="text-6xl font-bold text-white text-right drop-shadow-lg leading-tight font-['Ransom']">
-               Welcome to <br/>
-               <span className="text-[#FFD700]">Nam Nguyen's</span> Space
+               Happy Birthday Baby!   <br/>
+               <span className="text-[#FFD700]">Welcome In</span> 
              </h1>
              <button 
                onClick={() => setHasEntered(true)}
@@ -74,8 +74,16 @@ function App() {
       {!isMobile && hasEntered && (
         <div className="absolute bottom-10 right-10 text-white/70 text-sm font-['DearPix'] pointer-events-none z-10">
           <div className="space-y-1">
-            <div>+ Press Space to check out the workspace</div>
-            <div>+ Press Tab to listen to some music</div>
+            {isScreenFocused ? (
+              <div>Enjoy the Music or Press Tab to Go Back</div>
+            ) : hasZoomed ? (
+              <div>Scroll Down to Check Out the Computer</div>
+            ) : (
+              <>
+                <div>+ Press Space to check out the workspace</div>
+                <div>+ Press Tab to listen to some music</div>
+              </>
+            )}
           </div>
         </div>
       )}
