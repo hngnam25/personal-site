@@ -27,6 +27,7 @@ interface AppState {
   hasZoomed: boolean; // Track if we are zoomed in via spacebar
   hasEntered: boolean; // Track if user has clicked "Enter" from intro
   isScreenFocused: boolean; // Track if user has pressed "Tab" for screen focus
+  isUnlocked: boolean; // Track if user has unlocked the OS
   spotifyState: SpotifyState;
 
   setPhase: (phase: AppPhase) => void;
@@ -34,6 +35,7 @@ interface AppState {
   setHasZoomed: (hasZoomed: boolean) => void;
   setHasEntered: (hasEntered: boolean) => void;
   setIsScreenFocused: (isScreenFocused: boolean) => void;
+  setIsUnlocked: (isUnlocked: boolean) => void;
   setSpotifyState: (state: Partial<SpotifyState>) => void;
   
   // Window Management
@@ -49,6 +51,7 @@ export const useStore = create<AppState>((set) => ({
   hasZoomed: false,
   hasEntered: false,
   isScreenFocused: false,
+  isUnlocked: false,
   spotifyState: {
     currentTrack: null,
     isPlaying: false,
@@ -59,6 +62,7 @@ export const useStore = create<AppState>((set) => ({
   setHasZoomed: (hasZoomed) => set({ hasZoomed }),
   setHasEntered: (hasEntered) => set({ hasEntered }),
   setIsScreenFocused: (isScreenFocused) => set({ isScreenFocused }),
+  setIsUnlocked: (isUnlocked) => set({ isUnlocked }),
   setSpotifyState: (newState) => set((state) => ({
     spotifyState: { ...state.spotifyState, ...newState }
   })),

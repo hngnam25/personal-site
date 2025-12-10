@@ -3,13 +3,18 @@ import { useStore } from '../store';
 import { Taskbar } from './os/Taskbar';
 import { DesktopIcon } from './os/DesktopIcon';
 import { Window } from './os/Window';
+import { LoginScreen } from './os/LoginScreen';
 import { AnimatePresence } from 'framer-motion';
 
 export const Overlay: React.FC = () => {
-  const { phase, isMobile, windows, isScreenFocused } = useStore();
+  const { phase, isMobile, windows, isScreenFocused, isUnlocked } = useStore();
   const showOS = phase === 'digital' || isMobile;
 
   if (!showOS) return null;
+
+  if (!isUnlocked) {
+    return <LoginScreen />;
+  }
 
   // We want to allow scrolling to pass through to the 3D scene to trigger the "zoom out"
   // but we still need pointer events for clicking icons and windows.
