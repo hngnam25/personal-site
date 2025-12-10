@@ -3,6 +3,7 @@ import { useGLTF, useTexture, useScroll } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { useStore } from "../../store";
+import { FloatingSpotifyPlayer } from './FloatingSpotifyPlayer';
 
 // --- Configuration ---
 const CONFIG = {
@@ -30,8 +31,8 @@ const WAYPOINTS = {
     lookAt: new THREE.Vector3(1.17, -0.35, -6),
   },
   screen: {
-    // Move straight to the back of the room
-    pos: new THREE.Vector3(0, -0.25, -6), 
+    // Move closer to the radio at the back
+    pos: new THREE.Vector3(0, -0.25, -6.0), 
     
     // Keep looking forward/slightly down or straight at the wall
     lookAt: new THREE.Vector3(0, -0.25  , -6), // Exact match to start.lookAt
@@ -313,9 +314,16 @@ export function RoomEnvironment(props: any) {
           rotation={[0, -Math.PI / 2, 0]}
         />
 
+        {/* Floating Spotify Player */}
+        {isScreenFocused && (
+           <group position={[0, 1, -1]}>
+              <FloatingSpotifyPlayer />
+           </group>
+        )}
+
         {/* Computer Desk Model */}
         {/* Positioned on the left table, rotated 90deg to face room center */}
-        <group position={[0, 0, 0]} rotation={[0, -Math.PI / 2, 0]}>
+        <group position={[0, 0, 0]} rotation={[0, -Math.PI / 2, 0]}>  
           <group position={[0, 0.85, 1.17]} rotation={[0, 3, 0]}>
             <primitive object={computerScene} scale={0.5} />
           </group>
