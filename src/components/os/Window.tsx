@@ -34,8 +34,8 @@ export const Window: React.FC<WindowProps> = ({ window: windowState }) => {
   if (!windowState.isOpen) return null;
 
   // Determine window dimensions
-  const windowWidth = windowState.width || (windowState.imageUrl ? 1000 : 384);
-  const windowHeight = windowState.height || (windowState.imageUrl ? 800 : 256);
+  const windowWidth = windowState.width || (windowState.imageUrl ? 560 : 384); // Photo windows are 56% of original size
+  const windowHeight = windowState.height || (windowState.imageUrl ? 448 : 256); // Photo windows are 56% of original size
 
   return (
     <motion.div

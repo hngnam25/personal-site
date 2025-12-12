@@ -120,8 +120,8 @@ export const useStore = create<AppState>((set) => ({
       isOpen: true,
       isMinimized: false,
       position: { 
-        x: typeof window !== 'undefined' ? window.innerWidth / 2 - 500 : 960 - 500, // Center horizontally (1000px / 2 = 500px)
-        y: typeof window !== 'undefined' ? window.innerHeight / 2 - 400 : 540 - 400 // Center vertically (800px / 2 = 400px)
+        x: typeof window !== 'undefined' ? window.innerWidth / 2 - 280 : 960 - 280, // Center horizontally (560px / 2 = 280px)
+        y: typeof window !== 'undefined' ? window.innerHeight / 2 - 224 : 540 - 224 // Center vertically (448px / 2 = 224px)
       },
       zIndex: -2, // Behind hidden-message and all photos (lowest z-index)
     },

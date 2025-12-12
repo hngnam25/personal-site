@@ -13,14 +13,14 @@ export const PHOTO_FILES = [
 
 // Helper function to generate photo windows with layered arrangement
 export const generatePhotoWindows = () => {
-  const windowWidth = 1000; // 2x larger (was 500px)
-  const windowHeight = 800; // 768px content + 32px chrome (title bar + status bar)
+  const windowWidth = 560; // Another 20% smaller (was 700px, now 80% of that = 56% of original)
+  const windowHeight = 448; // Another 20% smaller (was 560px, now 80% of that = 56% of original)
   const screenWidth = typeof window !== 'undefined' ? window.innerWidth : 1920;
   const screenHeight = typeof window !== 'undefined' ? window.innerHeight : 1080;
   
   // Calculate positions for 2x2 grid with overlapping
-  // Each window overlaps by approximately 200-300px
-  const overlap = 250;
+  // Each window overlaps proportionally (another 20% smaller)
+  const overlap = 140; // Another 20% smaller (was 175px, now 80% of that = 56% of original)
   const startX = screenWidth / 2 - windowWidth - overlap / 2 + screenWidth * 0.1; // Move 10% to the right
   const startY = (screenHeight / 2 - windowHeight - overlap / 2) + screenHeight * 0.2; // Move 30% down
   
