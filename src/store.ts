@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { generatePhotoWindows } from './utils/photos';
 
 export type AppPhase = 'analog' | 'digital';
 
@@ -6,9 +7,11 @@ export interface WindowState {
   id: string;
   title: string;
   content: string; // Markdown content
+  imageUrl?: string; // Optional image URL for photo windows
   isOpen: boolean;
   isMinimized: boolean;
   position: { x: number; y: number };
+  zIndex?: number; // Z-index for layering windows
 }
 
 export interface SpotifyState {
@@ -91,7 +94,9 @@ export const useStore = create<AppState>((set) => ({
       isOpen: false,
       isMinimized: false,
       position: { x: 200, y: 150 },
-    }
+    },
+    // Photo windows - dynamically generated from public/photos/
+    ...generatePhotoWindows()
   ],
 
   openWindow: (id) => set((state) => ({

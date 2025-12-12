@@ -16,12 +16,20 @@ export const Window: React.FC<WindowProps> = ({ window: windowState }) => {
     <motion.div
       drag
       dragMomentum={false}
-      dragConstraints={{ left: 0, top: 24, right: globalThis.innerWidth - 50, bottom: globalThis.innerHeight - 50 }} 
+      dragConstraints={{ 
+        left: 0, 
+        top: 24, 
+        right: typeof window !== 'undefined' ? window.innerWidth - (windowState.imageUrl ? 1000 : 384) : 0, 
+        bottom: typeof window !== 'undefined' ? window.innerHeight - (windowState.imageUrl ? 800 : 300) : 0 
+      }} 
       initial={{ scale: 0.95, opacity: 0, x: windowState.position.x, y: windowState.position.y }}
       animate={{ scale: 1, opacity: 1 }}
       exit={{ scale: 0.95, opacity: 0 }}
-      className="absolute w-96 bg-[#DDDDDD] border border-black shadow-[2px_2px_0_rgba(0,0,0,0.2)] flex flex-col overflow-hidden font-sans"
-      style={{ fontFamily: 'Chicago, sans-serif' }}
+      className={`absolute ${windowState.imageUrl ? 'w-[1000px]' : 'w-96'} bg-[#DDDDDD] border border-black shadow-[2px_2px_0_rgba(0,0,0,0.2)] flex flex-col overflow-hidden font-sans`}
+      style={{ 
+        fontFamily: 'Chicago, sans-serif',
+        zIndex: windowState.zIndex || 'auto'
+      }}
     >
       {/* Mac OS 9 Title Bar */}
       <div className="h-6 bg-[#DDDDDD] border-b border-[#555555] flex items-center justify-center relative px-1 select-none cursor-grab active:cursor-grabbing">
@@ -59,10 +67,18 @@ export const Window: React.FC<WindowProps> = ({ window: windowState }) => {
 
       {/* Content Area with Inner Bezel */}
       <div className="flex-1 p-[2px]">
-          <div className="bg-white border-l border-t border-[#555555] border-r border-b border-[#fff] h-64 overflow-y-auto custom-scrollbar p-3 text-black text-sm font-mono leading-relaxed">
-            <ReactMarkdown className="prose prose-sm max-w-none font-sans">
-              {windowState.content}
-            </ReactMarkdown>
+          <div className={`bg-white border-l border-t border-[#555555] border-r border-b border-[#fff] ${windowState.imageUrl ? 'h-[768px]' : 'h-64'} overflow-auto custom-scrollbar ${windowState.imageUrl ? 'p-0' : 'p-3'} text-black text-sm font-mono leading-relaxed`}>
+            {windowState.imageUrl ? (
+              <img 
+                src={windowState.imageUrl} 
+                alt={windowState.title}
+                className="w-full h-full object-contain"
+              />
+            ) : (
+              <ReactMarkdown className="prose prose-sm max-w-none font-sans">
+                {windowState.content}
+              </ReactMarkdown>
+            )}
           </div>
       </div>
       

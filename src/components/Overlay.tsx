@@ -81,7 +81,7 @@ export const Overlay: React.FC = () => {
       {/* Windows Layer */}
       <div className="absolute inset-0 pointer-events-none">
         <AnimatePresence>
-          {windows.map((window) => (
+          {[...windows].sort((a, b) => (a.zIndex || 0) - (b.zIndex || 0)).map((window) => (
             <div key={window.id} className="pointer-events-auto">
                 <Window window={window} />
             </div>
