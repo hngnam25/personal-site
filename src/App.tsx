@@ -5,7 +5,7 @@ import { Overlay } from './components/Overlay';
 import { useStore } from './store';
 
 function App() {
-  const { isMobile, setIsMobile, setPhase, hasEntered, setHasEntered, hasZoomed, isScreenFocused } = useStore();
+  const { isMobile, setIsMobile, setPhase, hasEntered, setHasEntered, hasZoomed, isScreenFocused, phase } = useStore();
 
   useEffect(() => {
     const checkMobile = () => {
@@ -88,7 +88,11 @@ function App() {
             {isScreenFocused ? (
               <div>Enjoy the Music or Press Tab to Go Back</div>
             ) : hasZoomed ? (
-              <div>Scroll Up to Check Out the Computer</div>
+              phase === 'digital' ? (
+                <div>Scroll Down to Get Back in the Room</div>
+              ) : (
+                <div>Scroll Up to Check Out the Computer</div>
+              )
             ) : (
               <>
                 <div>+ Press Space to check out the workspace</div>
