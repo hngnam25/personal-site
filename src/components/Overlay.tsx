@@ -72,11 +72,13 @@ export const Overlay: React.FC = () => {
       </div>
 
       {/* Desktop Icons - Enable Pointer Events - Push down below menu bar */}
+      {/* Temporarily hidden
       <div className="absolute top-10 left-4 flex flex-col gap-6 z-0 pointer-events-auto text-right items-end right-4 left-auto">
         <DesktopIcon id="projects" label="My Projects" />
         <DesktopIcon id="writings" label="Writings" />
         <DesktopIcon id="about" label="About Me" />
       </div>
+      */}
 
       {/* Windows Layer */}
       <div className="absolute inset-0 pointer-events-none">
