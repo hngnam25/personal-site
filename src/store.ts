@@ -95,6 +95,19 @@ export const useStore = create<AppState>((set) => ({
       isMinimized: false,
       position: { x: 200, y: 150 },
     },
+    // Birthday message window - appears in front of all photos
+    {
+      id: 'birthday-message',
+      title: 'Read Me.txt',
+      content: '# Happy Birthday & 5 Month Anniversary Baby!\n\nYour challenge is to close all of these photos to revisit some of our favourite memories captured together <3',
+      isOpen: true,
+      isMinimized: false,
+      position: { 
+        x: typeof window !== 'undefined' ? window.innerWidth / 2 - 192 : 960 - 192, 
+        y: typeof window !== 'undefined' ? window.innerHeight / 2 - 100 : 540 - 100 
+      },
+      zIndex: 10, // Highest z-index to appear in front of all photos
+    },
     // Photo windows - dynamically generated from public/photos/
     ...generatePhotoWindows()
   ],
