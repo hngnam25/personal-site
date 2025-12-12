@@ -1,7 +1,6 @@
 import React from 'react';
 import { useStore } from '../store';
 import { Taskbar } from './os/Taskbar';
-import { DesktopIcon } from './os/DesktopIcon';
 import { Window } from './os/Window';
 import { LoginScreen } from './os/LoginScreen';
 import { AnimatePresence } from 'framer-motion';
