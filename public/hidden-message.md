@@ -10,7 +10,7 @@ Hơn nữa là as a girlfriend thì tui thực sự là cảm thấy được r�
 
 Lớn hơn một tuổi rồi, anh mong tuổi này anh vẫn luôn được yêu Khánh và chúc Khánh luôn luôn xinh gái, ít bướng và always keep that sparkles in your eyes!!. I love you so so much and I can't wait to see what you will do this year <3
 
-Best,
+Thank you for being my home^^,
 Nam đẹp zai
 
 
