@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 import { useStore, WindowState } from '../../store';
@@ -9,8 +9,33 @@ interface WindowProps {
 
 export const Window: React.FC<WindowProps> = ({ window: windowState }) => {
   const closeWindow = useStore((state) => state.closeWindow);
+  const [markdownContent, setMarkdownContent] = useState<string>(windowState.content);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (windowState.markdownUrl) {
+      setIsLoading(true);
+      fetch(windowState.markdownUrl)
+        .then((response) => response.text())
+        .then((text) => {
+          setMarkdownContent(text);
+          setIsLoading(false);
+        })
+        .catch((error) => {
+          console.error('Error loading markdown file:', error);
+          setMarkdownContent('# Error\n\nFailed to load markdown file.');
+          setIsLoading(false);
+        });
+    } else {
+      setMarkdownContent(windowState.content);
+    }
+  }, [windowState.markdownUrl, windowState.content]);
 
   if (!windowState.isOpen) return null;
+
+  // Determine window dimensions
+  const windowWidth = windowState.width || (windowState.imageUrl ? 1000 : 384);
+  const windowHeight = windowState.height || (windowState.imageUrl ? 800 : 256);
 
   return (
     <motion.div
@@ -19,16 +44,18 @@ export const Window: React.FC<WindowProps> = ({ window: windowState }) => {
       dragConstraints={{ 
         left: 0, 
         top: 24, 
-        right: typeof window !== 'undefined' ? window.innerWidth - (windowState.imageUrl ? 1000 : 384) : 0, 
-        bottom: typeof window !== 'undefined' ? window.innerHeight - (windowState.imageUrl ? 800 : 300) : 0 
+        right: typeof window !== 'undefined' ? window.innerWidth - windowWidth : 0, 
+        bottom: typeof window !== 'undefined' ? window.innerHeight - windowHeight : 0 
       }} 
       initial={{ scale: 0.95, opacity: 0, x: windowState.position.x, y: windowState.position.y }}
       animate={{ scale: 1, opacity: 1 }}
       exit={{ scale: 0.95, opacity: 0 }}
-      className={`absolute ${windowState.imageUrl ? 'w-[1000px]' : 'w-96'} bg-[#DDDDDD] border border-black shadow-[2px_2px_0_rgba(0,0,0,0.2)] flex flex-col overflow-hidden font-sans`}
+      className="absolute bg-[#DDDDDD] border border-black shadow-[2px_2px_0_rgba(0,0,0,0.2)] flex flex-col overflow-hidden font-sans"
       style={{ 
         fontFamily: 'Chicago, sans-serif',
-        zIndex: windowState.zIndex || 'auto'
+        zIndex: windowState.zIndex || 'auto',
+        width: `${windowWidth}px`,
+        height: `${windowHeight}px`
       }}
     >
       {/* Mac OS 9 Title Bar */}
@@ -67,7 +94,9 @@ export const Window: React.FC<WindowProps> = ({ window: windowState }) => {
 
       {/* Content Area with Inner Bezel */}
       <div className="flex-1 p-[2px]">
-          <div className={`bg-white border-l border-t border-[#555555] border-r border-b border-[#fff] ${windowState.imageUrl ? 'h-[768px]' : 'h-64'} overflow-auto custom-scrollbar ${windowState.imageUrl ? 'p-0' : 'p-3'} text-black text-sm font-mono leading-relaxed`}>
+          <div className={`bg-white border-l border-t border-[#555555] border-r border-b border-[#fff] overflow-auto custom-scrollbar ${windowState.imageUrl ? 'p-0' : 'p-3'} text-black text-sm font-mono leading-relaxed`}
+               style={{ height: `${windowHeight - 40}px` }} // Subtract title bar (24px) and status bar (16px) = 40px
+          >
             {windowState.imageUrl ? (
               <img 
                 src={windowState.imageUrl} 
@@ -75,9 +104,15 @@ export const Window: React.FC<WindowProps> = ({ window: windowState }) => {
                 className="w-full h-full object-contain"
               />
             ) : (
-              <ReactMarkdown className="prose prose-sm max-w-none font-sans">
-                {windowState.content}
-              </ReactMarkdown>
+              <>
+                {isLoading ? (
+                  <div className="text-center text-gray-500 py-4">Loading...</div>
+                ) : (
+                  <ReactMarkdown className="prose prose-sm max-w-none font-sans">
+                    {markdownContent}
+                  </ReactMarkdown>
+                )}
+              </>
             )}
           </div>
       </div>

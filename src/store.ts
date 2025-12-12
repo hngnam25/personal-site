@@ -8,10 +8,13 @@ export interface WindowState {
   title: string;
   content: string; // Markdown content
   imageUrl?: string; // Optional image URL for photo windows
+  markdownUrl?: string; // Optional URL to load markdown content from external file
   isOpen: boolean;
   isMinimized: boolean;
   position: { x: number; y: number };
   zIndex?: number; // Z-index for layering windows
+  width?: number; // Optional custom width in pixels
+  height?: number; // Optional custom height in pixels
 }
 
 export interface SpotifyState {
@@ -107,6 +110,22 @@ export const useStore = create<AppState>((set) => ({
         y: typeof window !== 'undefined' ? window.innerHeight / 2 - 100 : 540 - 100 
       },
       zIndex: 10, // Highest z-index to appear in front of all photos
+    },
+    // Hidden message window - appears behind all photos, revealed when all photos are closed
+    {
+      id: 'hidden-message',
+      title: 'Message.txt',
+      content: '', // Content will be loaded from markdownUrl
+      markdownUrl: '/hidden-message.md', // Path to markdown file in public folder
+      isOpen: true,
+      isMinimized: false,
+      width: 768, // 2x the default width (384px * 2)
+      height: 512, // 2x the default height (256px * 2)
+      position: { 
+        x: typeof window !== 'undefined' ? window.innerWidth / 2 - 384 : 960 - 384, // Center horizontally (768px / 2 = 384px)
+        y: typeof window !== 'undefined' ? window.innerHeight / 2 - 256 : 540 - 256 // Center vertically (512px / 2 = 256px)
+      },
+      zIndex: -1, // Behind all photos (lowest z-index)
     },
     // Photo windows - dynamically generated from public/photos/
     ...generatePhotoWindows()
