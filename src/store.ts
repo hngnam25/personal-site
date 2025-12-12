@@ -111,6 +111,20 @@ export const useStore = create<AppState>((set) => ({
       },
       zIndex: 10, // Highest z-index to appear in front of all photos
     },
+    // Background photo - appears behind hidden-message and all photos
+    {
+      id: 'background-photo',
+      title: 'ILMGF.jpg',
+      content: '',
+      imageUrl: '/photos/ILMGF.jpg',
+      isOpen: true,
+      isMinimized: false,
+      position: { 
+        x: typeof window !== 'undefined' ? window.innerWidth / 2 - 500 : 960 - 500, // Center horizontally (1000px / 2 = 500px)
+        y: typeof window !== 'undefined' ? window.innerHeight / 2 - 400 : 540 - 400 // Center vertically (800px / 2 = 400px)
+      },
+      zIndex: -2, // Behind hidden-message and all photos (lowest z-index)
+    },
     // Hidden message window - appears behind all photos, revealed when all photos are closed
     {
       id: 'hidden-message',
@@ -125,7 +139,7 @@ export const useStore = create<AppState>((set) => ({
         x: typeof window !== 'undefined' ? window.innerWidth / 2 - 384 : 960 - 384, // Center horizontally (768px / 2 = 384px)
         y: typeof window !== 'undefined' ? window.innerHeight / 2 - 256 : 540 - 256 // Center vertically (512px / 2 = 256px)
       },
-      zIndex: -1, // Behind all photos (lowest z-index)
+      zIndex: -1, // Behind all photos but above background photo
     },
     // Photo windows - dynamically generated from public/photos/
     ...generatePhotoWindows()
